@@ -5,6 +5,7 @@ import hashlib
 import requests as rq
 import pandas as pd
 from math import trunc
+import math
 import time
 
 
@@ -64,36 +65,74 @@ def get_balance(api_key, secret_key, baseurl):
 
     return balance
 
-positions = get_open_positions(api_key, secret_key, baseurl)
+def truncate(number, decimals=0):
+    """
+    Returns a value truncated to a specific number of decimal places.
+    """
+    if not isinstance(decimals, int):
+        raise TypeError("decimal places must be an integer.")
+    elif decimals < 0:
+        raise ValueError("decimal places has to be 0 or more.")
+    elif decimals == 0:
+        return math.trunc(number)
 
-for position in positions:
+    factor = 10.0 ** decimals
+    return math.trunc(number * factor) / factor
 
-    if float(position['entryPrice']) < float(position['markPrice']) and float(position['unRealizedProfit']) > 0:
-        side = "Long"
-    elif float(position['entryPrice']) > float(position['markPrice']) and float(position['unRealizedProfit']) > 0:
-        side = "Short"
-    elif float(position['entryPrice']) < float(position['markPrice']) and float(position['unRealizedProfit']) < 0:
-        side = "Short"
-    elif float(position['entryPrice']) > float(position['markPrice']) and float(position['unRealizedProfit']) < 0:
-        side = "Long"
-    else:
-        side = "Both"
+def update_graph():
+    df = pd.read_csv("balance.csv")
+    df = pd.DataFrame({"date":[dt.date.today()], "balance":[0]})
+    pd.DataFrame.to_csv("")
+def update_data():
+    positions = get_open_positions(api_key, secret_key, baseurl)
+    btc, eth, ltc = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
-    if position['symbol'] == 'BTCUSDT':
-        btc = pd.DataFrame({'Symbol': ['BTC'], 'Side': side, 'Quantity': [position['positionAmt']], 'Enter Price': [position['entryPrice']], 'Mark Price': [position['markPrice']], 'Unrealized PnL': [float(position['unRealizedProfit'])]})
-    elif position['symbol'] == 'ETHUSDT':
-        eth = pd.DataFrame({'Symbol': ['ETH'], 'Side': side, 'Quantity': [position['positionAmt']], 'Enter Price': [position['entryPrice']], 'Mark Price': [position['markPrice']], 'Unrealized PnL': [float(position['unRealizedProfit'])]})
-    elif position['symbol'] == 'LTCUSDT':
-        ltc = pd.DataFrame({'Symbol': ['LTC'], 'Side': side, 'Quantity': [position['positionAmt']], 'Enter Price': [position['entryPrice']], 'Mark Price': [position['markPrice']], 'Unrealized PnL': [float(position['unRealizedProfit'])]})
+    for position in positions:
+        if float(position['entryPrice']) < float(position['markPrice']) and float(position['unRealizedProfit']) > 0:
+            side = "Long"
+        elif float(position['entryPrice']) > float(position['markPrice']) and float(position['unRealizedProfit']) > 0:
+            side = "Short"
+        elif float(position['entryPrice']) < float(position['markPrice']) and float(position['unRealizedProfit']) < 0:
+            side = "Short"
+        elif float(position['entryPrice']) > float(position['markPrice']) and float(position['unRealizedProfit']) < 0:
+            side = "Long"
+        else:
+            side = "Both"
 
-df = btc.append(eth).append(ltc)
-df = df.reset_index()
-df.drop('index', axis='columns', inplace=True)
-df = df.style.applymap(color, subset=['Unrealized PnL'])
+        if position['symbol'] == 'BTCUSDT':
+            btc = pd.DataFrame({'Symbol': ['BTC'], 'Side': side, 'Quantity': ["$" + "{:.2f}".format(float(position['isolatedWallet']), 2)], 'Enter Price': ["$" + "{:.2f}".format(truncate(float(position['entryPrice']), 2))], 'Mark Price': ["$" + "{:.2f}".format(truncate(float(position['markPrice']), 2))], 'Unrealized PnL ($)': [float(position['unRealizedProfit'])]})
+        elif position['symbol'] == 'ETHUSDT':
+            eth = pd.DataFrame({'Symbol': ['ETH'], 'Side': side, 'Quantity': ["$" + "{:.2f}".format(float(position['isolatedWallet']), 2)], 'Enter Price': ["$" + "{:.2f}".format(truncate(float(position['entryPrice']), 2))], 'Mark Price': ["$" + "{:.2f}".format(truncate(float(position['markPrice']), 2))], 'Unrealized PnL ($)': [float(position['unRealizedProfit'])]})
+        elif position['symbol'] == 'LTCUSDT':
+            ltc = pd.DataFrame({'Symbol': ['LTC'], 'Side': side, 'Quantity': ["$" + "{:.2f}".format(float(position['isolatedWallet']), 2)], 'Enter Price': ["$" + "{:.2f}".format(truncate(float(position['entryPrice']), 2))], 'Mark Price': ["$" + "{:.2f}".format(truncate(float(position['markPrice']), 2))], 'Unrealized PnL ($)': [float(position['unRealizedProfit'])]})
+            
+    df = btc.append(eth).append(ltc)
+    df = df.reset_index()
+    df.drop('index', axis='columns', inplace=True)
+    df = df.style.applymap(color, subset=['Unrealized PnL ($)'])
 
-table = st.table(df)
+    return df
 
-balance = round(get_balance(api_key, secret_key, baseurl), 2)
+placeholderT = st.empty()
+placeholderB = st.empty()
 
-st.markdown("## Balance: " + str(balance))
 
+
+st.write("")
+st.write("")
+st.write("")
+
+st.text("Made by Pablo López")
+
+while True:
+    try:
+        df = update_data()
+        balance = get_balance(api_key, secret_key, baseurl)
+    except:
+        pass
+    placeholderT.table(df)
+    left_column, right_column = placeholderB.beta_columns(2)
+    balance = round(get_balance(api_key, secret_key, baseurl), 2)
+    left_column.markdown("<h1 style='text-align: left; color: white;'>Balance</h1>", unsafe_allow_html=True)
+    right_column.markdown("<h1 style='text-align: right; color: yellow;'>"+str(balance)+"</h1>", unsafe_allow_html=True)
+    time.sleep(10)
