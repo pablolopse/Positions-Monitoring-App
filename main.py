@@ -9,8 +9,8 @@ import math
 import time
 
 
-api_key = KEY
-secret_key = S_KEY
+api_key = "TOBIugMMe8cncoZ3Zb8NUpxGFuCuirjY4YoM4pQTqZDiRwoNAMXUAJo1qyvcPFGF"
+secret_key = "Zl1PGmwYmpKUc0CGJ6PreKNYwz2ZsGvssPh6WzLTFr8UZ23GQ0T8QEvzWmnU6I1o"
 
 baseurl = "https://fapi.binance.com"
 
@@ -115,8 +115,6 @@ def update_data():
 
 placeholderT = st.empty()
 placeholderB = st.empty()
-
-
 
 st.write("")
 st.write("")
