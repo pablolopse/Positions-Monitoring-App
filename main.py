@@ -8,8 +8,8 @@ from math import trunc
 import time
 
 
-api_key = "TOBIugMMe8cncoZ3Zb8NUpxGFuCuirjY4YoM4pQTqZDiRwoNAMXUAJo1qyvcPFGF"
-secret_key = "Zl1PGmwYmpKUc0CGJ6PreKNYwz2ZsGvssPh6WzLTFr8UZ23GQ0T8QEvzWmnU6I1o"
+api_key = KEY
+secret_key = S_KEY
 
 baseurl = "https://fapi.binance.com"
 
