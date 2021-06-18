@@ -8,13 +8,9 @@ from math import trunc
 import math
 import time
 
-
 api_key = "TOBIugMMe8cncoZ3Zb8NUpxGFuCuirjY4YoM4pQTqZDiRwoNAMXUAJo1qyvcPFGF"
 secret_key = "Zl1PGmwYmpKUc0CGJ6PreKNYwz2ZsGvssPh6WzLTFr8UZ23GQ0T8QEvzWmnU6I1o"
-
 baseurl = "https://fapi.binance.com"
-
-st.title("Binance Open Positions")
 
 def color(val):
     """
@@ -113,6 +109,8 @@ def update_data():
 
     return df
 
+
+st.title("Binance Open Positions")
 placeholderT = st.empty()
 placeholderB = st.empty()
 
@@ -133,4 +131,4 @@ while True:
     balance = round(get_balance(api_key, secret_key, baseurl), 2)
     left_column.markdown("<h1 style='text-align: left; color: white;'>Balance</h1>", unsafe_allow_html=True)
     right_column.markdown("<h1 style='text-align: right; color: yellow;'>"+str(balance)+"</h1>", unsafe_allow_html=True)
-    time.sleep(10)
+    time.sleep(30)
